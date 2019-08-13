@@ -1,4 +1,4 @@
-梗圖機器人
+刷梗圖機器人
 ===
 
 # 動機
@@ -8,56 +8,34 @@
 # 介紹
 
 梗圖機器人能讓使用者爲圖片標上標籤(tag),並能在日常聊天中叫出bot並送出圖片,讓使用者更加方便聊天(or嗆聲)
-
-:::info
-群組和個人都可以使用
-:::
-上傳流程
----
-1. 上傳圖片
+# 安裝依賴套件
+請確保您的Python3環境具備以下套件:
+* [Pytorch](https://pytorch.org/)
+    > 請自行前往官網選擇適當版本安裝
+* [Requests:](https://pypi.org/project/requests/)
+    > pip install requests
+* [Monpa:](https://github.com/monpa-team/monpa)
+    > pip install monpa
+* [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot)
+    > pip install python-telegram-bot
+# 使用流程:
+### 開始使用
+輸入 /start Bot將會為您介紹使用方式
+### 上傳圖片
+先輸入 /add
+1. 傳送一張圖片
 2. 傳一個描述梗圖文字
     > ex: 黑人玩踩地雷
-3. 用分詞套件拆解文字
-4. 生成一些按鈕讓使用者選擇
+3. 生成一些按鈕讓使用者選擇
     > ex:【黑人】【玩】【踩地雷】
-5. 使用者選擇之按鈕即為此圖片之標籤
+4. 使用者選擇完畢後按下確認送出
 
-使用流程
----
-+ 自動識別:
-    * 使用分詞器解析語句，並將形容詞對應到適合的梗圖，或適合的tag
-    * [點我前往分詞器函示庫](https://github.com/monpa-team/monpa)
-+ 傳送梗圖:
-    1. 用tag匹配之前加入的梗圖
-    2. BOT根據對方語句建議之前自動識別對應的梗圖，並讓使用者點選
+或者:
+1. 傳送一張圖片
+2. 傳送Tags
+    > ex:#黑人#踩地雷
 
-# 實現方式
-## 分詞:
-[MONPA分詞](https://github.com/monpa-team/monpa)
-範例:
-```=python
-import monpa
-sentence = "蔡英文總統今天受邀參加台北市政府所舉辦的陽明山馬拉松比賽。"
-result = monpa.pseg(sentence)
-
-for t in result:
-  print(t)
-```
-輸出:
-```
-['蔡英文', 'PER']
-['總統', 'Na']
-['今天', 'Nd']
-['受', 'P']
-['邀', 'VF']
-['參加', 'VC']
-['台北市政府', 'ORG']
-['所', 'D']
-['舉辦', 'VC']
-['的', 'DE']
-['陽明山', 'LOC']
-['馬拉松', 'Na']
-['比賽', 'Na']
-['。', 'PERIODCATEGORY']
-```
-找到符合的詞性
+### 傳送梗圖:
+1. 在對話方塊輸入Bot名稱
+    > ex:@superpp_bot
+2. 在Bot名稱後以空格分開tags，Bot將為您把匹配Tag的圖片列出來供您選擇
