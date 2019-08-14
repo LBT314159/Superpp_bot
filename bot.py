@@ -22,63 +22,70 @@ class Tag:
         self.tg                 =   telegram
         self.creat_button_lock  =   {}
         self.reply_markup       =   {}
-    def AddTag(self,bot,update):
-        user_obj = GetUserObj(self.db,update)
+        self.user_temp_data = {}
+    def HandleMessageQuery(self,bot,update):
         uid = update.message.from_user.id
-        if user_obj['current_mode'] == 'add':
-            if update.message.text.find('#') != -1:
-                for i in range(len(user_obj['photos'])):
-                    if len(user_obj['photos'][i]['tag']) == 0:
-                        user_obj['photos'][i]['tag'] = update.message.text.split('#')[1:]
-                        bot.sendMessage(uid,'好ㄉ，已為id為'+str(user_obj['photos'][i]['fid'])+'的圖片加上tag'+update.message.text)
-                        return
-                bot.sendMessage(uid,'很抱歉，目前沒有圖片是還未加上Tag的喔')
+        if self.db.getUserMode(uid) == 'add':
+            self.appendTag(bot,update)
+        elif self.db.getUserMode(uid) == 'tag':
+            self.editTag(bot,update)
+    def appendTag(self,bot,update):
+        uid = update.message.from_user.id
+        no_tag_photos = self.db.getNoTagPhotos(uid)
+        photo_id = no_tag_photos[0]['fid']
+        if update.message.text.find('#') != -1:
+            if len(no_tag_photos) > 0:
+                self.db.setPhotoTags(uid,photo_id,update.message.text.split('#')[1:])
+                bot.sendMessage(uid,'好ㄉ，已為id為'+str(photo_id)+'的圖片加上tag'+update.message.text)
+                return
+            bot.sendMessage(uid,'很抱歉，目前沒有圖片是還未加上Tag的喔')
+        else:
+            userinPut = update.message.text.replace('\n', ' ')
+            button_data = check(userinPut)
+            if (not str(uid) in self.creat_button_lock.keys()) and (len(no_tag_photos) > 0):
+                self.creat_button_lock[str(uid)] = True
+                self.reply_markup[str(uid)] = CreateButton(button_data,
+                                            update.message.from_user.id,
+                                            photo_id)
+                self.user_temp_data[str(uid)] = {}
+                self.user_temp_data[str(uid)]['current_tags'] = []
+                bot.sendMessage(uid,'點擊按鈕即可為圖片{}加入標籤'.format(photo_id), reply_markup=self.reply_markup[str(uid)])
             else:
-                userinPut = update.message.text.replace('\n', ' ')
-                button_data = check(userinPut)
-                for i in range(len(user_obj['photos'])):
-                    if len(user_obj['photos'][i]['tag']) == 0:
-                        if not str(uid) in self.creat_button_lock.keys():
-                            self.creat_button_lock[str(uid)] = True
-                            self.reply_markup[str(uid)] = CreateButton(button_data,
-                                                        update.message.from_user.id,
-                                                        user_obj['photos'][i]['fid'])
-                            user_obj['current_tags'] = []
-                            bot.sendMessage(uid,'點擊按鈕即可為圖片{}加入標籤'.format(user_obj['photos'][i]['fid']), reply_markup=self.reply_markup[str(uid)])
-                        else:
-                            bot.sendMessage(uid,'在之前的按鈕送出前無法再產生新的')
-        elif user_obj['current_mode'] == 'tag':
-            text = update.message.text.split(':')
-            fid = int(text[0])
-            for i in range(len(user_obj['photos'])):
-                if user_obj['photos'][i]['fid'] == fid:
-                    user_obj['photos'][i]['tag'] = text[1].split('#')[1:]
-                    user_obj['current_mode'] = 'none'
-                    bot.sendMessage(uid,'好ㄉ，已為id為'+str(user_obj['photos'][i]['fid'])+'的圖片加上tag:'+text[1]+'\n\n同時已離開Tag編輯模式，輸入 /tag 再次進入')
-                    return
-            bot.sendMessage(uid,'很抱歉，找不到符合ID的圖片，請檢察您的輸入')
+                bot.sendMessage(uid,'在之前的按鈕送出前無法再產生新的')
+    def editTag(self,bot,update):
+        uid = update.message.from_user.id
+        user_input_query = update.message.text.split(':')
+        photo_id = int(user_input_query[0])
+        photo = self.db.getPhotoFromID(uid,photo_id)
+        if photo:
+                self.db.setPhotoTags(uid,photo_id,user_input_query[1].split('#')[1:])
+                self.db.setUserMode(uid,'none')
+                bot.sendMessage(uid,'好ㄉ，已為id為'+str(photo_id)+'的圖片加上tag:'+user_input_query[1]+'\n\n同時已離開Tag編輯模式，輸入 /tag 再次進入')
+                return
+        bot.sendMessage(uid,'很抱歉，找不到符合ID的圖片，請檢察您的輸入')
     def ButtonCallback(self, bot, update):
         user_obj = GetUserObj(self.db,update)
         query = update.callback_query
         qdata = query.data
         #print(query)
         uid = update.callback_query.from_user.id
+        current_tags = self.user_temp_data[str(uid)]['current_tags']
         if qdata.find('$') != -1:
             result = qdata.split('$')[1:]# [id,fid]
             fid = int(result[1])
             for photo in user_obj['photos']:
                 if photo['fid'] == fid:
-                    photo['tag'] = user_obj['current_tags'].copy()
-                    del user_obj['current_tags']
+                    photo['tag'] = current_tags[:]
+                    del current_tags
                     del self.creat_button_lock[str(uid)]
                     del self.reply_markup[str(uid)]
                     query.edit_message_text(text='id:{}的圖片已加入Tag:{}'.format(fid,photo['tag']))
         else:
-            if qdata in self.db.GetUser(update.callback_query.from_user.id)['current_tags']:
-                user_obj['current_tags'].remove(qdata)
+            if qdata in current_tags:
+                current_tags.remove(qdata)
             else:
-                user_obj['current_tags'].append(qdata)
-            query.edit_message_text(text='已選擇標籤(再次點擊可取消): {}'.format(user_obj['current_tags']), reply_markup=self.reply_markup[str(uid)])
+                current_tags.append(qdata)
+            query.edit_message_text(text='已選擇標籤(再次點擊可取消): {}'.format(current_tags), reply_markup=self.reply_markup[str(uid)])
 
 # 用來加入圖片
 class Photos:

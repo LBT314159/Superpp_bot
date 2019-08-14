@@ -20,7 +20,7 @@ if __name__ == "__main__":
                         CommandHandler('start',bot.start_command),
                         CommandHandler('tag',bot.tag_change_command),
                         MessageHandler(Filters.photo,photo_proc.AddPhoto),
-                        MessageHandler(Filters.text,tag_proc.AddTag),
+                        MessageHandler(Filters.text,tag_proc.HandleMessageQuery),
                         InlineQueryHandler(inline_handler.InlineQuery),
                         CallbackQueryHandler(tag_proc.ButtonCallback)
                         ]

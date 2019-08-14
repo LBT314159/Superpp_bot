@@ -40,5 +40,29 @@ class Database:
         else:
             self.AddUser(user_id)
             return self.users[str(user_id)]
+    def getUserMode(self, user_id):
+        user_current_mode = self.GetUser(user_id)['current_mode']
+        return user_current_mode
+    def setUserMode(self, user_id, mode):
+        self.GetUser(user_id)['current_mode'] = mode
+    def getUserPhotos(self, user_id):
+        pass
+    def getPhotoFromID(self, user_id, fid):
+        for photo in self.GetUser(user_id)['photos']:
+            if photo['fid'] == fid:
+                return photo
+        return []
+    def getPhotosFromTags(self, user_id, Tags):
+        pass
+    def getNoTagPhotos(self, user_id):
+        all_user_photos = self.GetUser(user_id)['photos']
+        no_tag_photos = [photo for photo in all_user_photos if not len(photo['tag'])]
+        return no_tag_photos
+    def appendUserPhotos(self, user_id):
+        pass
+    def getPhotoTags(self, user_id):
+        pass
+    def setPhotoTags(self, user_id, fid, tags):
+        self.GetUser(user_id)['photos'][fid]['tag'] = tags[:]
     def SaveAll(self):
         self.SaveObj(self.users,self.users_info_path)

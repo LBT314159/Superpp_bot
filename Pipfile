@@ -7,12 +7,9 @@ verify_ssl = true
 pylint = "*"
 
 [packages]
-monpa = "*"
-torch = "*"
+request = "*"
 python-telegram-bot = "*"
-flask = "*"
-gunicorn = "*"
-requests = "*"
+monpa = "*"
 
 [requires]
 python_version = "3.6"
