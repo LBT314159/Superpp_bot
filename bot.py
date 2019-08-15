@@ -130,12 +130,15 @@ class Bot:
         bot.sendMessage(uid,'新來的童鞋你好，歡迎使用本Bot，輸入 /add 進入新增模式，此模式下可以加入梗圖，在此模式下傳送給偶的所有圖片都會被加入資料庫，如果想離開這個模式輸入 /cancel 即可\n')
         bot.sendMessage(uid,'如果要修改標籤，輸入 /tag 即可進入標籤修改模式')
         bot.sendMessage(uid,'在聊天欄內輸入 @superpp_bot 後面加上之前加的tag即可選擇所匹配的梗圖喔!多個Tag用空格分開即可')
-    def add_mode(self,bot,update):
-        GetUserObj(self.db,update)['current_mode'] = 'add'
-        update.message.reply_text('已進入新增模式，傳些好料的圖片吧')
-    def cancel_mode(self,bot,update):
-        GetUserObj(self.db,update)['current_mode'] = 'none'
-        update.message.reply_text('離開當前模式')
-    def tag_change_command(self,bot,update):
-        GetUserObj(self.db,update)['current_mode'] = 'tag'
-        update.message.reply_text('已進入Tag修改模式，請輸入 <圖片ID>:<新的Tags>')
+    def add_mode(self, bot, update):
+        user_id = update.message.from_user.id
+        self.db.setUserMode(user_id, 'add')
+        bot.sendMessage(user_id,'已進入新增模式，傳些好料的圖片吧')
+    def cancel_mode(self, bot, update):
+        user_id = update.message.from_user.id
+        self.db.setUserMode(user_id, 'none')
+        bot.sendMessage(user_id,'離開當前模式')
+    def tag_change_command(self, bot, update):
+        user_id = update.message.from_user.id
+        self.db.setUserMode(user_id, 'tag')
+        bot.sendMessage(user_id,'已進入Tag修改模式，請輸入 <圖片ID>:<新的Tags>')
