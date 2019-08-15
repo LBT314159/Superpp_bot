@@ -1,4 +1,4 @@
-from bot import Tag, Photos, InlineHandler, Bot
+from bot import Tag, Photos, InlineHandler, Bot, ButtonManager
 from tgAPI import *
 from database import Database
 from configparser import ConfigParser
@@ -10,7 +10,8 @@ if __name__ == "__main__":
 
     tg              =   TelegramAPI(token)
     db              =   Database()              # 用來處理資料儲存相關
-    tag_proc        =   Tag(db,tg)              # 用來Tag新增/修改
+    button_mgr      =   ButtonManager(db,tg)    #處理按鈕的新增和修改
+    tag_proc        =   Tag(db,tg,button_mgr)   # 用來Tag新增/修改
     photo_proc      =   Photos(db,tg)           # 用來加入圖片
     inline_handler  =   InlineHandler(db,tg)    # 用來處理inline查詢請求(叫出圖片)
     bot             =   Bot(db,tg)              # 處理當前模式的切換
@@ -22,7 +23,7 @@ if __name__ == "__main__":
                         MessageHandler(Filters.photo,photo_proc.AddPhoto),
                         MessageHandler(Filters.text,tag_proc.HandleMessageQuery),
                         InlineQueryHandler(inline_handler.InlineQuery),
-                        CallbackQueryHandler(tag_proc.ButtonCallback)
+                        CallbackQueryHandler(button_mgr.ButtonCallback)
                         ]
     tg.AddHandlerFromList(handlers) # 從List加入handler
 

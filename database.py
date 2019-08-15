@@ -57,12 +57,21 @@ class Database:
     def getNoTagPhotos(self, user_id):
         all_user_photos = self.GetUser(user_id)['photos']
         no_tag_photos = [photo for photo in all_user_photos if not len(photo['tag'])]
-        return no_tag_photos
+        return no_tag_photos[:]
+    def hasNoTagPhotos(self, user_id):
+        all_user_photos = self.GetUser(user_id)['photos']
+        for photo in all_user_photos:
+            if not len(photo['tag']):
+                return True
+        return False
     def appendUserPhotos(self, user_id):
         pass
-    def getPhotoTags(self, user_id):
-        pass
-    def setPhotoTags(self, user_id, fid, tags):
-        self.GetUser(user_id)['photos'][fid]['tag'] = tags[:]
+    def getPhotoTags(self, user_id, photo_id):
+        photo_id    = int(photo_id)
+        photo_tags  = self.GetUser(user_id)['photos'][photo_id]['tag']
+        return photo_tags[:]
+    def setPhotoTags(self, user_id, photo_id, tags):
+        photo_id    = int(photo_id)
+        self.GetUser(user_id)['photos'][photo_id]['tag'] = tags[:]
     def SaveAll(self):
         self.SaveObj(self.users,self.users_info_path)
