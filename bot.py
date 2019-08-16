@@ -52,9 +52,9 @@ class Tag:
             self.editTag(bot,update)
     def appendTag(self,bot,update):
         user_id = update.message.from_user.id
-        no_tag_photos = self.db.getNoTagPhotos(user_id)
-        photo_id = no_tag_photos[0]['fid']
         if self.db.hasNoTagPhotos(user_id):
+            no_tag_photos = self.db.getNoTagPhotos(user_id)
+            photo_id = no_tag_photos[0]['fid']
             if update.message.text.find('#') != -1:
                 self.db.setPhotoTags(user_id,photo_id,update.message.text.split('#')[1:])
                 bot.sendMessage(user_id,'好ㄉ，已為id為{}的圖片加上tag:{}'.format(str(photo_id),update.message.text))
