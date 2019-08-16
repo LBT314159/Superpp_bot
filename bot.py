@@ -87,13 +87,15 @@ class Photos:
         self.db                 =   db
         self.tg                 =   telegram
     def AddPhoto(self,bot,update):
-        user_obj = GetUserObj(self.db,update)
-        uid = update.message.from_user.id
-        if user_obj['current_mode'] == 'add':
-            #print(update.message.from_user.id)
-            fid = len(user_obj['photos'])
-            user_obj['photos'].append({'photo':update.message.photo[0].file_id,'fid':fid,'tag':[],'date':time.time()})
-            bot.sendMessage(uid,'已加入一張圖片，id為:' + str(fid) + '\n接著請輸入該圖片的tag(ex:#Dog#玩球)或是一句符合該圖片的描述句子BOT將把該句子轉換成適合的tag供您選擇')
+        user_id = update.message.from_user.id
+        if self.db.getUserMode(user_id) == 'add':
+            fid = self.db.appendUserPhotos(user_id, update.message.photo[0].file_id)
+            if fid != -1:
+                bot.sendMessage(user_id,'已加入一張圖片，id為:{}'.format(fid))
+                bot.sendMessage(user_id,'接著請輸入該圖片的tag(ex:#Dog#玩球)')
+                bot.sendMessage(user_id,'您也可以輸入一句符合該圖片的描述句子BOT將把該句子轉換成適合的tag供您選擇')
+            else:
+                bot.sendMessage(user_id,'無法加入圖片，圖片可能已經存在')
 # 用來處理inline查詢請求(叫出圖片)
 class InlineHandler:
     def __init__(self,db,telegram):

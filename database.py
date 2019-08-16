@@ -1,5 +1,6 @@
 import json
 import os, sys
+import time
 class Database:
     def __init__(self):
         if not os.path.exists('data'):
@@ -70,8 +71,11 @@ class Database:
             if not len(photo['tag']):
                 return True
         return False
-    def appendUserPhotos(self, user_id):
-        pass
+    def appendUserPhotos(self, user_id, photo_file_id):
+        all_user_photos = self.GetUser(user_id)['photos']
+        fid = len(all_user_photos)
+        all_user_photos.append({'photo':photo_file_id,'fid':fid,'tag':[],'date':time.time()})
+        return fid
     def getPhotoTags(self, user_id, photo_id):
         photo_id    = int(photo_id)
         photo_tags  = self.GetUser(user_id)['photos'][photo_id]['tag']
