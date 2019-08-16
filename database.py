@@ -52,8 +52,14 @@ class Database:
             if photo['fid'] == fid:
                 return photo
         return []
-    def getPhotosFromTags(self, user_id, Tags):
-        pass
+    def getPhotosByTags(self, user_id, Tags):
+        all_user_photos = self.GetUser(user_id)['photos']
+        result_photos   = []
+        for photo in all_user_photos:
+            for tag in Tags:
+                if tag in photo['tag']:
+                    result_photos.append(photo)
+        return result_photos[:]
     def getNoTagPhotos(self, user_id):
         all_user_photos = self.GetUser(user_id)['photos']
         no_tag_photos = [photo for photo in all_user_photos if not len(photo['tag'])]

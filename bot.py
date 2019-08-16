@@ -99,22 +99,17 @@ class InlineHandler:
     def __init__(self,db,telegram):
         self.db                 =   db
         self.tg                 =   telegram
-    def InlineQuery(self, update, context):
-        user_obj = GetUserObj(self.db,context)
-        query = context.inline_query.query.split(' ')
+    def InlineQuery(self, bot, update):
+        tags = update.inline_query.query.split(' ')
+        user_id = update.inline_query.from_user.id
         results = []
-        photo_list = {}
-        uid = context.inline_query.from_user.id
-        photo_list[str(uid)] = [photo for photo in user_obj['photos'] if list_serach(query,photo['tag'])]
-        photo_list[str(uid)].sort(key = get_photo_date,reverse = True)
-        for i in range(len(photo_list[str(uid)])):
+        Photos  = self.db.getPhotosByTags(user_id, tags)
+        for photo in Photos:
             results.append(
-                InlineQueryResultCachedPhoto(
-                    id = uuid4(),
-                    photo_file_id = photo_list[str(uid)][i]['photo']
+                InlineQueryResultCachedPhoto(id = uuid4(), photo_file_id = photo['photo'])
                 )
-            )
-        context.inline_query.answer(results)
+        #update.inline_query.answer(results)
+        bot.answer_inline_query(update.inline_query.id, results, is_personal = True, cache_time = 0)
 
 # 處理當前模式的切換
 class Bot:
