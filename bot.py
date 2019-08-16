@@ -1,13 +1,5 @@
 from tgAPI import *
 from sentencecut import check
-def GetUserObj(db,update):
-    if update.message != None:
-        return db.GetUser(update.message.from_user.id)
-    elif update.inline_query != None:
-        return db.GetUser(update.inline_query.from_user.id)
-    elif update.callback_query != None:
-        # callback_query
-        return db.GetUser(update.callback_query.from_user.id)
 #處理按鈕的新增和修改
 class ButtonManager:
     def __init__(self,db,telegram):
